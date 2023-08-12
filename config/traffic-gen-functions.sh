@@ -1,16 +1,19 @@
 #!/bin/bash
 
-## configuration section
+#Configuration section
+
 #Instance count must always be greater than 1. It is tested up to 100.
-instance_count=30
+instance_count=3
+
 #Mode 1 will randomize the 4th octet of the subnets in subnets.conf. This makes traffic come from /24 address spaces
 #Mode 2 will randomize the 3rd and 4th octets of subnets in subnet.conf. This makes traffic potentially come up /16 address spaces.
 mode=2
+
 #This sets the delay on rotating ip addresses. The default is 60 seconds. The value must be in seconds form. So 1 hour is 3600 seconds.
 rotation_delay=60
-##
 
-## Dont change these options
+
+## Do not change these options
 ## These variables are used in the functions below. Change them only if you know what your are doing.
 subnets_conf="$configdir/subnets.conf"
 env_file="$configdir/.env"
@@ -18,10 +21,8 @@ driver_opts="--opt com.docker.network.bridge.enable_ip_masquerade=false --opt in
 net_prefix="tg"
 docker_image="ubuntu-trafficgen:latest"
 cmd="/webscript.sh"
-##
 
-##dont change these
-##Really don't. They form the basis for all the flow statements in each function. 
+
 ## Note: Because arrays count from 0, the instance count configuration option is always reduced by 1. 
 instance_count=$((instance_count - 1))
 ip_array=($(cat $subnets_conf| grep -v "#"))
@@ -84,12 +85,12 @@ removenets_func(){
 makecontainers_func(){
 if [ $mode == 1 ]
 then
-  #echo -e "address:\t4th\ttg#\tarry#\trand_ip" ////Troubleshooting
+  #echo -e "address:\t4th\ttg#\tarry#\trand_ip" #Troubleshooting
   for i in `seq 0 $instance_count` # for every instance in instance_count create a container
   do  
     net=$(( ($RANDOM % $ip_length) )) #select a random integer that represents an index postion in subnets.conf
 	  ip=$(echo ${ip_array[$net]} | awk -F "." -v o4=${octet4[$i]} '{ print $1"."$2"."$3"."o4}') # Mutate the subnet assigned to change the 4th octet with one from config/.env
-	  #echo -e "$ip\t${octet4[$i]}\t:$net\t:$i" //Troubleshooting
+	  #echo -e "$ip\t${octet4[$i]}\t:$net\t:$i" #Troubleshooting
 	  docker container run -d -v $configdir/webscript.sh:/webscript.sh --entrypoint /webscript.sh --network tg$net --ip $ip --name instance$i $docker_image  
   done
 elif [ $mode == 2 ]
@@ -123,10 +124,10 @@ removecontainers_func(){
 rotate_ips(){
  while true
  do
-    sleep "$rotation_delay"s
-	removecontainers_func
-    makeips_funct
-	makecontainers_func	
+   sleep "$rotation_delay"s
+   removecontainers_func
+   makeips_funct
+   makecontainers_func	
  done
 }
 #echo $ip | awk -F "." '{ print $1"."$2'.'$3}'^C
