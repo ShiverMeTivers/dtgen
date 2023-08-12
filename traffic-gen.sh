@@ -49,7 +49,7 @@ tgstart_func(){
 	  ##(ping localhost > /dev/null) &
 	  makenets_func
 	  makeips_funct
-      makecontainers_func
+          makecontainers_func
 	  (rotate_ips) &
 	  echo $! | tee $scriptdir/tg.pid
 	fi	
@@ -65,7 +65,7 @@ tgstop_func(){
 	  echo -e "$scriptdir/tg.pid not found. Killing docker containers and networks.."
 	fi
 	removecontainers_func
-    removenets_func
+        removenets_func
 }
 
 ## Status function. Shows currently executing containers along with the IP address associated with them.
